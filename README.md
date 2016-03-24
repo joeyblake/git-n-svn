@@ -1,7 +1,7 @@
 A collection of tools for git INSIDE svn
 ========================================
 
-Currently there is one tool.
+Currently there is one command.
 
 ```git-n-svn setup <directoryName>```
 
@@ -13,3 +13,5 @@ Setup will do the following things:
 * Initialize a git repo
 * Point the git repo to the specified remote git repository
 * Show you the svn and git status of the files so you can decide what to do with any stragglers
+
+https://github.com/joeyblake/git-n-svn
