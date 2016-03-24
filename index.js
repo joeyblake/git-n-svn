@@ -22,74 +22,71 @@ function svnIgnore() {
   return false;
 }
 
+function setup( dirname, svnRepo, gitRepo ) {
+
+  if ( exec( 'svn checkout ' + svnRepo + ' ' + dirname ).code !== 0 ) {
+    echo( 'Error: svn checkout failed' );
+    exit( 1 );
+  }
+
+  cd( dirname );
+
+  if ( exec('git init').code !== 0 ) {
+    echo( 'Error: git init failed' );
+    exit( 1 );
+  }
+
+  if ( exec( 'git ls-remote ' + gitRepo, { silent:true } ).code !== 0 ) {
+    echo( 'Error: ' + gitRepo + ' is not a git repo' );
+    exit( 1 );
+  }
+
+  if ( exec( 'git remote add -f origin ' + gitRepo ).code !== 0 ) {
+    echo( 'Error: git origin failed' );
+    exit( 1 );
+  }
+
+  if ( exec( 'git checkout -f master ' ).code !== 0 ) {
+    echo( 'Error: git checkout failed' );
+    exit( 1 );
+  }
+
+  echo('==== git ======');
+  exec( 'git status' );
+  echo('===== svn =====');
+  exec( 'svn status' );
+
+  echo( 'RAGE GET TO GIT IN SVNING!' );
+}
+
 program
-  .arguments('<dirname>')
+  .arguments('<cmd> [dirname]')
   .option('-s, --svn-repo <svn-repo>', 'The svn repository')
   .option('-g, --git-repo <git-repo>', 'The git repository')
-  .action( function ( dirname ) {
+  .action( function ( cmd, dirname ) {
     co( function *() {
-      var svnRepo, gitRepo;
+      if ( cmd === 'setup' ) {
+        var svnRepo, gitRepo;
 
-      if ( gitIgnore() ) {
-          echo( "git ignoring svn." );
+        if ( gitIgnore() ) {
+            echo( "git ignoring svn." );
+        }
+
+        if ( svnIgnore() ) {
+            echo( "svn ignoring git." );
+        }
+
+        svnRepo = yield prompt('svn repo: ');
+        if ( exec( 'svn ls ' + svnRepo, { silent:true } ).code !== 0 ) {
+          echo( 'Error: ' + svnRepo + ' is not a svn repo' );
+          exit( 1 );
+        }
+
+        gitRepo = yield prompt('git repo: ');
+
+        setup( dirname, svnRepo, gitRepo );
       }
-
-      if ( svnIgnore() ) {
-          echo( "svn ignoring git." );
-      }
-
-      svnRepo = yield prompt('svn repo: ');
-      if ( exec( 'svn ls ' + svnRepo, { silent:true } ).code !== 0 ) {
-        echo( 'Error: ' + svnRepo + ' is not a svn repo' );
-        exit( 1 );
-      }
-
-      gitRepo = yield prompt('git repo: ');
-
-      if ( exec( 'svn checkout ' + svnRepo + ' ' + dirname ).code !== 0 ) {
-        echo( 'Error: svn checkout failed' );
-        exit( 1 );
-      }
-
-      cd( dirname );
-
-      if ( exec('git init').code !== 0 ) {
-        echo( 'Error: git init failed' );
-        exit( 1 );
-      }
-
-      if ( exec( 'git ls-remote ' + gitRepo, { silent:true } ).code !== 0 ) {
-        echo( 'Error: ' + gitRepo + ' is not a git repo' );
-        exit( 1 );
-      }
-
-      if ( exec( 'git remote add -f origin ' + gitRepo ).code !== 0 ) {
-        echo( 'Error: git origin failed' );
-        exit( 1 );
-      }
-
-      if ( exec( 'git checkout -f master ' ).code !== 0 ) {
-        echo( 'Error: git checkout failed' );
-        exit( 1 );
-      }
-
-      echo('==== git ======');
-      exec( 'git status' );
-      echo('===== svn =====');
-      exec( 'svn status' );
-
-      echo( 'RAGE GET TO GIT IN SVNING!' );
       exit();
-      //svn checkout svnRepo dirname
-      //cd dirname
-      //git init
-      //git remote add -f origin gitRepo
-      //git checkout -f master
-      //global gitignore
-      //global svn ignore
-      //svn status
-      //git status
-
     });
   })
   .parse(process.argv);
