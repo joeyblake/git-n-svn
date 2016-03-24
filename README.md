@@ -1,6 +1,10 @@
 A collection of tools for git INSIDE svn
 ========================================
 
+Installation
+
+```npm install -g git-n-svn```
+
 Currently there is one command.
 
 ```git-n-svn setup <directoryName>```
